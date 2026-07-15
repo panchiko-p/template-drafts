@@ -1,0 +1,61 @@
+id: splunk-secure-gateway-version
+
+info:
+  name: Splunk Secure Gateway Detection
+  author: panchiko-p
+  severity: info
+  description: |
+    Detects installed Splunk Secure Gateway app version via the REST API. Requires username and password.
+  metadata:
+    verified: false
+    max-request: 2
+  tags: splunk,jsonpickle,exposure,version
+
+http:
+  - raw:
+      - |
+        POST /services/auth/login HTTP/1.1
+        Host: {{Hostname}}
+        Content-Type: application/x-www-form-urlencoded
+
+        username={{username}}&password={{password}}
+
+      - |
+        GET /services/apps/local/splunk_secure_gateway?output_mode=json HTTP/1.1
+        Host: {{Hostname}}
+        Authorization: Splunk {{session}}
+
+    matchers-condition: and
+    matchers:
+      - type: word
+        part: body
+        words:
+          - "splunk_secure_gateway"
+
+      - type: regex
+        part: body
+        regex:
+          - '"label":"Splunk Secure Gateway".*?"version":"([\d.]+)"'
+
+    extractors:
+      - type: regex
+        part: body
+        name: session
+        regex:
+          - "<sessionKey>([^<]+)</sessionKey>"
+        group: 1
+        internal: true
+
+      - type: regex
+        part: body
+        name: version
+        regex:
+          - '"label":"Splunk Secure Gateway".*?"version":"([\d.]+)"'
+        group: 1
+        internal: true
+
+      - type: regex
+        part: body
+        regex:
+          - '"label":"Splunk Secure Gateway".*?"version":"([\d.]+)"'
+        group: 1
