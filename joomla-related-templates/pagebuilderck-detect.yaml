@@ -1,0 +1,59 @@
+id: pagebuilderck-detect
+
+info:
+  name: Page Builder CK - Detect
+  author: panchiko-p
+  severity: info
+  description: |
+    Page Builder CK is a Joomla extension for building pages. This template attempts to extract the installed version from the component's XML manifest.
+  reference:
+    - https://www.joomlack.fr
+  metadata:
+    max-request: 2
+  tags: tech,joomla,pagebuilderck
+http:
+  - method: GET
+    path:
+      - "{{BaseURL}}/components/com_pagebuilderck/pagebuilderck.xml"
+      - "{{BaseURL}}/administrator/components/com_pagebuilderck/pagebuilderck.xml"
+
+    matchers-condition: and
+    matchers:
+      - type: status
+        status:
+          - 200
+
+      - type: word
+        words:
+          - "text/xml"
+          - "application/xml"
+        condition: or
+        part: header
+
+      - type: word
+        words:
+          - "<version>"
+        part: body
+
+      - type: word
+        words:
+          - "<creationDate>"
+          - "<author>"
+        condition: or
+        part: body
+
+      - type: word
+        words:
+          - "<html"
+          - "<!DOCTYPE"
+        condition: or
+        part: body
+        negative: true
+
+    extractors:
+      - type: regex
+        part: body
+        name: version
+        group: 1
+        regex:
+          - '<version>(.*?)</version>'

@@ -1,0 +1,65 @@
+id: sppagebuilder-detect
+info:
+  name: SP Page Builder - Detect
+  author: panchiko-p
+  severity: info
+  description: |
+    SP Page Builder is a  builder extension for Joomla developed by JoomShaper. This template attempts to extract the installed version from the component's XML manifest.
+  reference:
+    - https://www.joomshaper.com/page-builder
+  metadata:
+    max-request: 3
+  tags: tech,joomla,sppagebuilder
+http:
+  - method: GET
+    path:
+      - "{{BaseURL}}/administrator/components/com_sppagebuilder/sppagebuilder.xml"
+      - "{{BaseURL}}/components/com_sppagebuilder/sppagebuilder.xml"
+    matchers-condition: and
+    matchers:
+      - type: status
+        status:
+          - 200
+      - type: word
+        words:
+          - "text/xml"
+          - "application/xml"
+        condition: or
+        part: header
+      - type: word
+        words:
+          - "<version>"
+        part: body
+      - type: word
+        words:
+          - "<creationDate>"
+          - "<author>"
+        condition: or
+        part: body
+      - type: word
+        words:
+          - "<html"
+          - "<!DOCTYPE"
+        condition: or
+        part: body
+        negative: true
+    extractors:
+      - type: regex
+        part: body
+        name: version
+        group: 1
+        regex:
+          - '<version>(.*?)</version>'
+
+  - method: GET
+    path:
+      - "{{BaseURL}}/components/com_sppagebuilder/assets/js/engine.js"
+    matchers-condition: and
+    matchers:
+      - type: status
+        status:
+          - 200
+      - type: word
+        part: header
+        words:
+          - "javascript"
