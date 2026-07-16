@@ -1,0 +1,69 @@
+id: icagenda-detect
+
+info:
+  name:  icagenda detect
+  author: panchiko-p
+  severity: info
+  description: |
+    Detects icagenda version from exposed install manifest file.
+  metadata:
+    verified: true
+    max-request: 2
+  tags: joomla,icagenda,exposed
+
+http:
+  - method: GET
+    path:
+      - "{{BaseURL}}/administrator/components/com_icagenda/icagenda.xml"
+      - "{{BaseURL}}/components/com_icagenda/icagenda.xml"
+
+    matchers-condition: and
+    matchers:
+      - type: status
+        status:
+          - 200
+      - type: word
+        words:
+          - "text/xml"
+          - "application/xml"
+        condition: or
+        part: header
+      - type: word
+        words:
+          - "<version>"
+        part: body
+      - type: word
+        words:
+          - "<creationDate>"
+          - "<author>"
+        condition: or
+        part: body
+      - type: word
+        words:
+          - "<html"
+          - "<!DOCTYPE"
+        condition: or
+        part: body
+        negative: true
+    extractors:
+      - type: regex
+        part: body
+        name: version
+        group: 1
+        regex:
+          - '<version>(.*?)</version>'
+        internal: true
+      - type: regex
+        part: body
+        group: 1
+        regex:
+          - '<version>(.*?)</version>'
+    matchers:
+      - type: status
+        status:
+          - 200
+      - type: word
+        part: header
+        words:
+          - "javascript"
+        negative: false
